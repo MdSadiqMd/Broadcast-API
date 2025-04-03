@@ -27,6 +27,7 @@ type DatabaseConfig struct {
 	User     string
 	Password string
 	Name     string
+	URL      string
 }
 
 type JWTConfig struct {
@@ -51,7 +52,7 @@ type QueueConfig struct {
 }
 
 func Load() (*Config, error) {
-	configPath := "config"
+	configPath := "pkg/config"
 	configName := "config"
 	configType := "yaml"
 	if os.Getenv("CONFIG_PATH") != "" {
