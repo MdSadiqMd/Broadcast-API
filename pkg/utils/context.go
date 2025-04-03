@@ -14,10 +14,7 @@ func SetUserInContext(ctx context.Context, user *models.JWTClaims) context.Conte
 	return context.WithValue(ctx, userContextKey, user)
 }
 
-func GetUserFromContext(ctx context.Context) *models.JWTClaims {
+func GetUserFromContext(ctx context.Context) (*models.JWTClaims, bool) {
 	user, ok := ctx.Value(userContextKey).(*models.JWTClaims)
-	if !ok {
-		return nil
-	}
-	return user
+	return user, ok
 }
