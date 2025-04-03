@@ -32,7 +32,7 @@ func Setup(r *chi.Mux, db *gorm.DB, jwtSecret string) {
 			r.Group(func(r chi.Router) {
 				r.Use(appMiddleware.RequireRole("admin"))
 				// Admin Routes
-				r.Get("/admin/health", func(w http.ResponseWriter, r *http.Request) {
+				r.Get("/admin/healthz", func(w http.ResponseWriter, r *http.Request) {
 					w.Write([]byte("OK"))
 				})
 			})

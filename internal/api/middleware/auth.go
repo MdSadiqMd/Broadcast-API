@@ -64,9 +64,13 @@ func isPublicRoute(r *http.Request) bool {
 
 func extractToken(r *http.Request) string {
 	bearerToken := r.Header.Get("Authorization")
-	if len(bearerToken) > 7 && strings.ToUpper(bearerToken[0:7]) == "BEARER" {
+	if len(bearerToken) > 7 && strings.ToUpper(bearerToken[0:7]) == "BEARER " {
 		return bearerToken[7:]
 	}
+	if len(bearerToken) > 6 && strings.ToUpper(bearerToken[0:6]) == "BEARER" {
+		return bearerToken[6:]
+	}
+
 	return ""
 }
 
