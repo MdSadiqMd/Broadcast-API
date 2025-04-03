@@ -41,7 +41,7 @@ func (r *UserRepository) FindByUsername(username string) (*models.User, error) {
 
 func (r *UserRepository) FindByUsernameOrEmail(username, email string) (*models.User, error) {
 	var user models.User
-	err := r.db.Where("username = ? OR email = ?", username, email).Find(&user).Error
+	err := r.db.Where("username = ? OR email = ?", username, email).First(&user).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
