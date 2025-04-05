@@ -26,12 +26,12 @@ func Setup(r *chi.Mux, db *gorm.DB, jwtSecret string) {
 	r.Route("/api", func(r chi.Router) {
 		r.Post("/login", authHandler.Login)
 		r.Post("/register", authHandler.Register)
+		// Protected Routes
 		r.Group(func(r chi.Router) {
 			r.Use(auth.Middleware())
-			// Protected Routes
+			// Admin Routes
 			r.Group(func(r chi.Router) {
 				r.Use(appMiddleware.RequireRole("admin"))
-				// Admin Routes
 				r.Get("/admin/healthz", func(w http.ResponseWriter, r *http.Request) {
 					w.Write([]byte("OK"))
 				})
