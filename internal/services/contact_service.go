@@ -40,11 +40,21 @@ func (s *ContactService) GetContactByID(id uint) (*models.Contact, error) {
 	return contact, nil
 }
 
-func (s *ContactService) UpdateContact(contact *models.Contact) (*models.Contact, error) {
-	updatedContact, err := s.repo.UpdateContact(contact)
+func (s *ContactService) UpdateContact(id uint, contact *models.Contact) (*models.Contact, error) {
+	existingContact, err := s.repo.GetContactByID(id)
 	if err != nil {
 		return nil, err
 	}
+
+	existingContact.FirstName = contact.FirstName
+	existingContact.LastName = contact.LastName
+	existingContact.Email = contact.Email
+
+	updatedContact, err := s.repo.UpdateContact(existingContact)
+	if err != nil {
+		return nil, err
+	}
+
 	return &updatedContact, nil
 }
 
