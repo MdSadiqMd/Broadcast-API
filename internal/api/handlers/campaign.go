@@ -9,7 +9,7 @@ import (
 	"github.com/MdSadiqMd/Broadcast-API/internal/models"
 	"github.com/MdSadiqMd/Broadcast-API/internal/services"
 	"github.com/MdSadiqMd/Broadcast-API/pkg/utils"
-	"github.com/gorilla/mux"
+	"github.com/go-chi/chi/v5"
 )
 
 type CampaignHandler struct {
@@ -51,7 +51,7 @@ func (h *CampaignHandler) GetAllCampaigns(w http.ResponseWriter, r *http.Request
 }
 
 func (h *CampaignHandler) GetCampaignByID(w http.ResponseWriter, r *http.Request) {
-	idParam := mux.Vars(r)["id"]
+	idParam := chi.URLParam(r, "id")
 	id, err := strconv.Atoi(idParam)
 	if err != nil {
 		utils.RespondError(w, http.StatusBadRequest, "invalid campaign ID")
@@ -68,7 +68,7 @@ func (h *CampaignHandler) GetCampaignByID(w http.ResponseWriter, r *http.Request
 }
 
 func (h *CampaignHandler) DeleteCampaign(w http.ResponseWriter, r *http.Request) {
-	idParam := mux.Vars(r)["id"]
+	idParam := chi.URLParam(r, "id")
 	id, err := strconv.Atoi(idParam)
 	if err != nil {
 		utils.RespondError(w, http.StatusBadRequest, "invalid campaign ID")
