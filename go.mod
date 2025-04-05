@@ -5,6 +5,7 @@ go 1.23.3
 require (
 	github.com/go-chi/chi/v5 v5.2.1
 	github.com/golang-jwt/jwt/v4 v4.5.2
+	github.com/gorilla/mux v1.8.1
 	github.com/spf13/viper v1.20.1
 	golang.org/x/crypto v0.36.0
 	gorm.io/driver/postgres v1.5.11
