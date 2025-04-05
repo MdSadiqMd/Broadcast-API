@@ -118,5 +118,6 @@ func setupDatabase(config config.DatabaseConfig) (*gorm.DB, error) {
 func runMigrations(db *gorm.DB) error {
 	return db.AutoMigrate(
 		&models.User{},
+		&models.Campaign{},
 	)
 }

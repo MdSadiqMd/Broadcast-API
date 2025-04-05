@@ -15,8 +15,9 @@ func NewCampaignRepository(db *gorm.DB) *CampaignRepository {
 	}
 }
 
-func (r *CampaignRepository) Create(campaign *models.Campaign) error {
-	return r.db.Create(campaign).Error
+func (r *CampaignRepository) Create(campaign *models.Campaign) (models.Campaign, error) {
+	err := r.db.Create(campaign).Error
+	return *campaign, err
 }
 
 func (r *CampaignRepository) GetAllCampaigns() ([]models.Campaign, error) {

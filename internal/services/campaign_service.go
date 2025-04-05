@@ -3,24 +3,25 @@ package services
 import (
 	"github.com/MdSadiqMd/Broadcast-API/internal/models"
 	"github.com/MdSadiqMd/Broadcast-API/internal/repositories"
+	"gorm.io/gorm"
 )
 
 type CampaignService struct {
 	repo repositories.CampaignRepository
 }
 
-func NewCampaignService(repo repositories.CampaignRepository) *CampaignService {
+func NewCampaignService(db *gorm.DB) *CampaignService {
 	return &CampaignService{
-		repo: repo,
+		repo: *repositories.NewCampaignRepository(db),
 	}
 }
 
 func (s *CampaignService) CreateCampaign(campaign *models.Campaign) (*models.Campaign, error) {
-	err := s.repo.Create(campaign)
+	createdCampaign, err := s.repo.Create(campaign)
 	if err != nil {
 		return nil, err
 	}
-	return &models.Campaign{}, err
+	return &createdCampaign, nil
 }
 
 func (s *CampaignService) GetAllCampaigns() ([]models.Campaign, error) {
@@ -40,7 +41,7 @@ func (s *CampaignService) GetCampaignByID(id uint) (*models.Campaign, error) {
 }
 
 func (s *CampaignService) DeleteCampaign(id uint) error {
-	err:= s.repo.DeleteCampaign(id)
+	err := s.repo.DeleteCampaign(id)
 	if err != nil {
 		return err
 	}
