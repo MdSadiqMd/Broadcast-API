@@ -15,6 +15,7 @@ func Setup(r *chi.Mux, db *gorm.DB, jwtSecret string) {
 	userService := services.NewUserService(db)
 	compaignService := services.NewCampaignService(db)
 	contactService := services.NewContactService(db)
+	broadcastService := services.NewBroadcastService(db)
 
 	auth := appMiddleware.NewAuth(appMiddleware.AuthConfig{
 		JWTSecret:     jwtSecret,
@@ -25,6 +26,7 @@ func Setup(r *chi.Mux, db *gorm.DB, jwtSecret string) {
 	authHandler := handlers.NewAuthHandler(userService, auth)
 	compaignHandler := handlers.NewCampaignHandler(compaignService, auth)
 	contactHandler := handlers.NewContactHandler(contactService, auth)
+	broadcastHandler := handlers.NewBroadcastHandler(broadcastService, auth)
 
 	r.Use(auth.Middleware())
 
@@ -40,10 +42,17 @@ func Setup(r *chi.Mux, db *gorm.DB, jwtSecret string) {
 			r.Delete("/campaign/{id}", compaignHandler.DeleteCampaign)
 
 			r.Post("/contact", contactHandler.CreateContact)
-			r.Post("/contacts", contactHandler.GetAllContacts) // need to debug this remember written POST not GET as sending audience_id
+			r.Post("/contacts", contactHandler.GetAllContacts)
 			r.Get("/contact/{id}", contactHandler.GetContactByID)
 			r.Put("/contact/{id}", contactHandler.UpdateContact)
 			r.Delete("/contact/{id}", contactHandler.DeleteContact)
+
+			r.Post("/broadcast", broadcastHandler.CreateBroadcast)
+			r.Get("/broadcast/{id}", broadcastHandler.GetBroadcastByID)
+			r.Put("/broadcast/{id}", broadcastHandler.UpdateBroadcast)
+			r.Get("/broadcasts", broadcastHandler.ListBroadcasts)
+			r.Post("/broadcast/{id}/send", broadcastHandler.SendBroadcast)
+			r.Delete("/broadcast/{id}", broadcastHandler.DeleteBroadcast)
 			// Admin Routes
 			r.Group(func(r chi.Router) {
 				r.Use(appMiddleware.RequireRole("admin"))

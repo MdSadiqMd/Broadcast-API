@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/MdSadiqMd/Broadcast-API/internal/api/middleware"
 	"github.com/MdSadiqMd/Broadcast-API/internal/models"
@@ -24,11 +25,53 @@ func NewBroadcastHandler(broadcastService *services.BroadcastService, auth *midd
 	}
 }
 
+type CreateBroadcastRequest struct {
+	Name        string  `json:"name"`
+	AudienceID  uint    `json:"audience_id"`
+	CampaignID  uint    `json:"campaign_id"`
+	UserID      uint    `json:"user_id"`
+	From        string  `json:"from"`
+	Subject     string  `json:"subject"`
+	ReplyTo     string  `json:"reply_to"`
+	HTML        string  `json:"html"`
+	Text        string  `json:"text"`
+	Status      string  `json:"status"`
+	ScheduledAt *string `json:"scheduled_at,omitempty"`
+	SentAt      *string `json:"sent_at,omitempty"`
+}
+
 func (h *BroadcastHandler) CreateBroadcast(w http.ResponseWriter, r *http.Request) {
-	var broadcast models.Broadcast
-	if err := json.NewDecoder(r.Body).Decode(&broadcast); err != nil {
+	var req CreateBroadcastRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		utils.RespondError(w, http.StatusBadRequest, "invalid request payload")
 		return
+	}
+
+	broadcast := models.Broadcast{
+		Name:       req.Name,
+		AudienceID: req.AudienceID,
+		CampaignID: req.CampaignID,
+		UserID:     req.UserID,
+		From:       req.From,
+		Subject:    req.Subject,
+		ReplyTo:    req.ReplyTo,
+		HTML:       req.HTML,
+		Text:       req.Text,
+		Status:     req.Status,
+	}
+
+	if req.ScheduledAt != nil && *req.ScheduledAt != "" {
+		t, err := time.Parse(time.RFC3339, *req.ScheduledAt)
+		if err == nil {
+			broadcast.ScheduledAt = &t
+		}
+	}
+
+	if req.SentAt != nil && *req.SentAt != "" {
+		t, err := time.Parse(time.RFC3339, *req.SentAt)
+		if err == nil {
+			broadcast.SentAt = &t
+		}
 	}
 
 	newBroadcast, err := h.broadcastService.CreateBroadcast(&broadcast)
@@ -80,6 +123,10 @@ func (h *BroadcastHandler) UpdateBroadcast(w http.ResponseWriter, r *http.Reques
 	utils.RespondJSON(w, http.StatusOK, updatedBroadcast)
 }
 
+type ScheduledPayload struct {
+	ScheduledAt string `json:"scheduled_at"`
+}
+
 func (h *BroadcastHandler) SendBroadcast(w http.ResponseWriter, r *http.Request) {
 	idParam := chi.URLParam(r, "id")
 	id, err := strconv.Atoi(idParam)
@@ -88,14 +135,14 @@ func (h *BroadcastHandler) SendBroadcast(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	var scheduled_at string
-	err = json.NewDecoder(r.Body).Decode(&scheduled_at)
+	var payload ScheduledPayload
+	err = json.NewDecoder(r.Body).Decode(&payload)
 	if err != nil {
 		utils.RespondError(w, http.StatusBadRequest, "invalid request payload: "+err.Error())
 		return
 	}
 
-	_, err = h.broadcastService.SendBroadcast(strconv.Itoa(id), scheduled_at)
+	_, err = h.broadcastService.SendBroadcast(strconv.Itoa(id), payload.ScheduledAt)
 	if err != nil {
 		utils.RespondError(w, http.StatusInternalServerError, "failed to send broadcast: "+err.Error())
 		return

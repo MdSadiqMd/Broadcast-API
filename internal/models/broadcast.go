@@ -21,7 +21,7 @@ type Broadcast struct {
 	SentAt      *time.Time     `json:"sent_at"`
 	Campaign    *Campaign      `gorm:"foreignKey:CampaignID" json:"campaign"`
 	User        *User          `gorm:"foreignKey:UserID" json:"user"`
-	ScheduledAt *time.Time     `json:"scheduled_at"`
+	ScheduledAt *time.Time     `json:"scheduled_at,omitempty"`
 	CreatedAt   time.Time      `json:"created_at"`
 	UpdatedAt   time.Time      `json:"updated_at"`
 	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`
