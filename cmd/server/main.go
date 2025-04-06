@@ -119,5 +119,9 @@ func runMigrations(db *gorm.DB) error {
 	return db.AutoMigrate(
 		&models.User{},
 		&models.Campaign{},
+		&models.Contact{},
+		&models.Broadcast{},
+		&models.CampaignAudience{},
+		&models.JWTClaims{},
 	)
 }
