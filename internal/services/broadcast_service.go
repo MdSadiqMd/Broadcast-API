@@ -1,6 +1,8 @@
 package services
 
 import (
+	"time"
+
 	"github.com/MdSadiqMd/Broadcast-API/internal/models"
 	"github.com/MdSadiqMd/Broadcast-API/internal/repositories"
 	"gorm.io/gorm"
@@ -32,8 +34,29 @@ func (s *BroadcastService) GetBroadcastByID(id uint) (*models.Broadcast, error) 
 	return broadcast, nil
 }
 
-func (s *BroadcastService) UpdateBroadcast(broadcast *models.Broadcast) (*models.Broadcast, error) {
-	updatedBroadcast, err := s.repo.UpdateBroadcast(broadcast)
+func (s *BroadcastService) UpdateBroadcast(id uint, broadcast *models.Broadcast) (*models.Broadcast, error) {
+	existingBoradcast, err := s.repo.GetBroadcastByID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	existingBoradcast.Name = broadcast.Name
+	existingBoradcast.AudienceID = broadcast.AudienceID
+	existingBoradcast.CampaignID = broadcast.CampaignID
+	existingBoradcast.UserID = broadcast.UserID
+	existingBoradcast.From = broadcast.From
+	existingBoradcast.Subject = broadcast.Subject
+	existingBoradcast.ReplyTo = broadcast.ReplyTo
+	existingBoradcast.HTML = broadcast.HTML
+	existingBoradcast.Text = broadcast.Text
+	existingBoradcast.Status = broadcast.Status
+	existingBoradcast.SentAt = broadcast.SentAt
+	existingBoradcast.Campaign = broadcast.Campaign
+	existingBoradcast.User = broadcast.User
+	existingBoradcast.ScheduledAt = broadcast.ScheduledAt
+	existingBoradcast.UpdatedAt = time.Now()
+
+	updatedBroadcast, err := s.repo.UpdateBroadcast(existingBoradcast)
 	if err != nil {
 		return nil, err
 	}

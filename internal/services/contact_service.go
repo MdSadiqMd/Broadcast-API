@@ -1,6 +1,8 @@
 package services
 
 import (
+	"time"
+
 	"github.com/MdSadiqMd/Broadcast-API/internal/models"
 	"github.com/MdSadiqMd/Broadcast-API/internal/repositories"
 	"gorm.io/gorm"
@@ -49,6 +51,7 @@ func (s *ContactService) UpdateContact(id uint, contact *models.Contact) (*model
 	existingContact.FirstName = contact.FirstName
 	existingContact.LastName = contact.LastName
 	existingContact.Email = contact.Email
+	existingContact.UpdatedAt = time.Now()
 
 	updatedContact, err := s.repo.UpdateContact(existingContact)
 	if err != nil {
