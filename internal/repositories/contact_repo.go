@@ -20,10 +20,17 @@ func (r *ContactRepository) CreateContact(contact *models.Contact) (models.Conta
 	return *contact, err
 }
 
-func (r *ContactRepository) GetAllContacts(audienceId uint) ([]models.Contact, error) {
+func (r *ContactRepository) GetAllContacts(campaignID uint) ([]models.Contact, error) {
 	var contacts []models.Contact
-	err := r.db.Where("audience_id = ?", audienceId).Find(&contacts).Error
-	return contacts, err
+	result := r.db.Joins("JOIN campaign_audiences ON campaign_audiences.contact_id = contacts.id").
+		Where("campaign_audiences.campaign_id = ?", campaignID).
+		Find(&contacts)
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return contacts, nil
 }
 
 func (r *ContactRepository) GetContactByID(id uint) (*models.Contact, error) {
