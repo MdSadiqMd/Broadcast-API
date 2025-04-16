@@ -41,3 +41,9 @@ func (r *CampaignRepository) GetCampaignByID(id uint) (*models.Campaign, error) 
 func (r *CampaignRepository) DeleteCampaign(id uint) error {
 	return r.db.Delete(&models.Campaign{}, id).Error
 }
+
+func (r *CampaignRepository) GetScheduledCampaigns() ([]models.Campaign, error) {
+	var campaigns []models.Campaign
+	err := r.db.Where("status = ?", models.CampaignStatusScheduled).Find(&campaigns).Error
+	return campaigns, err
+}
