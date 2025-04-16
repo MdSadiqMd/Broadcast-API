@@ -47,3 +47,11 @@ func (s *CampaignService) DeleteCampaign(id uint) error {
 	}
 	return nil
 }
+
+func (s *CampaignService) GetScheduledCampaigns() ([]models.Campaign, error) {
+	compaigns, err := s.repo.GetScheduledCampaigns()
+	if err != nil {
+		return nil, err
+	}
+	return compaigns, nil
+}
