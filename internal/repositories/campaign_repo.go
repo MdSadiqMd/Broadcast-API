@@ -1,6 +1,8 @@
 package repositories
 
 import (
+	"time"
+
 	"github.com/MdSadiqMd/Broadcast-API/internal/models"
 	"gorm.io/gorm"
 )
@@ -44,6 +46,10 @@ func (r *CampaignRepository) DeleteCampaign(id uint) error {
 
 func (r *CampaignRepository) GetScheduledCampaigns() ([]models.Campaign, error) {
 	var campaigns []models.Campaign
-	err := r.db.Where("status = ?", models.CampaignStatusScheduled).Find(&campaigns).Error
+	now := time.Now()
+	err := r.db.Where("status = ? AND scheduled_at <= ?",
+		models.CampaignStatusScheduled,
+		now).
+		Find(&campaigns).Error
 	return campaigns, err
 }
