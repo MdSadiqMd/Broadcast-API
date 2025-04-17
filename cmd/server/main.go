@@ -12,10 +12,9 @@ import (
 
 	api "github.com/MdSadiqMd/Broadcast-API/internal/api/routes"
 	"github.com/MdSadiqMd/Broadcast-API/internal/models"
+	"github.com/MdSadiqMd/Broadcast-API/internal/scheduler"
 	"github.com/MdSadiqMd/Broadcast-API/pkg/config"
 	"github.com/go-chi/chi/v5"
-
-	// "github.com/go-co-op/gocron"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -31,54 +30,56 @@ func main() {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 
-	err = runMigrations(db)
-	if err != nil {
+	if err = runMigrations(db); err != nil {
 		log.Fatalf("Failed to run migrations: %v", err)
 	}
 
 	r := chi.NewRouter()
 	api.Setup(r, db, cfg.JWT.Secret)
 
-	/* s := gocron.NewScheduler(time.UTC)
-	err = scheduler.Setup(s, db)
-	if err != nil {
-		log.Fatalf("Failed to setup scheduler: %v", err)
-	}
-	s.StartAsync() */
-
 	server := &http.Server{
-		Addr:    fmt.Sprintf(":%d", cfg.Server.Port),
-		Handler: r,
+		Addr:         fmt.Sprintf(":%d", cfg.Server.Port),
+		Handler:      r,
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 30 * time.Second,
+		IdleTimeout:  60 * time.Second,
 	}
-	serverCtx, serverStopCtx := context.WithCancel(context.Background())
 
+	go func() {
+		sched := scheduler.NewScheduler(db, *cfg)
+		if err := sched.Start(); err != nil {
+			log.Printf("Failed to start scheduler: %v", err)
+			return
+		}
+		defer sched.Stop()
+		select {}
+	}()
+
+	serverCtx, serverStopCtx := context.WithCancel(context.Background())
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 	go func() {
 		<-sig
-		shutdownCtx, _ := context.WithTimeout(serverCtx, 30*time.Second)
+		shutdownCtx, cancel := context.WithTimeout(serverCtx, 30*time.Second)
+		defer cancel()
 
 		go func() {
 			<-shutdownCtx.Done()
 			if shutdownCtx.Err() == context.DeadlineExceeded {
-				log.Fatal("graceful shutdown timed out.. forcing exit.")
+				log.Println("Graceful shutdown timed out")
 			}
 		}()
 
-		log.Println("Shutting down server...")
-		err := server.Shutdown(shutdownCtx)
-		if err != nil {
-			log.Printf("Error during shutdown: %v\n", err)
+		log.Println("Shutting down server gracefully...")
+		if err := server.Shutdown(shutdownCtx); err != nil {
+			log.Printf("Error during shutdown: %v", err)
 		}
-		// s.Stop()
-
 		serverStopCtx()
 	}()
 
-	log.Printf("Server is running on port %d\n", cfg.Server.Port)
-	err = server.ListenAndServe()
-	if err != nil && err != http.ErrServerClosed {
-		log.Fatalf("Server error: %v\n", err)
+	log.Printf("Server starting on port %d", cfg.Server.Port)
+	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		log.Fatalf("Server error: %v", err)
 	}
 
 	<-serverCtx.Done()
@@ -123,5 +124,11 @@ func runMigrations(db *gorm.DB) error {
 		&models.Broadcast{},
 		&models.CampaignAudience{},
 		&models.JWTClaims{},
+		&models.EmailJob{},
+		&models.EmailLog{},
+		&models.Template{},
+		&models.Message{},
+		&models.Subscriber{},
+		&models.List{},
 	)
 }
