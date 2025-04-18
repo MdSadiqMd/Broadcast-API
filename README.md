@@ -67,3 +67,10 @@ broadcast-clone/
 ├── Dockerfile                  # Docker configuration
 └── README.md                   # Project documentation
 ```
+
+```
+docker build -t mdsadiqmd/broadcast-api . 
+docker run -p 3000:3000 mdsadiqmd/broadcast-api
+
+docker-compose up is enough
+```
