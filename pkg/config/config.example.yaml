@@ -1,0 +1,29 @@
+server:
+  port: 3000
+  timeout: 30s
+
+database:
+  URL: ""
+  host: ""
+  port: 5432
+  user: ""
+  password: ""
+  name: ""
+
+jwt:
+  secret: ""
+  expirationTime: 24h
+
+smtp:
+  host: ""
+  port: 587
+  username: ""
+  password: ""
+  fromName: ""
+  fromAddr: ""
+
+queue:
+  workerCount: 5
+  maxRetries: 3
+  retryBackoff: 5m
+  rateLimit: 10
