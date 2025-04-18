@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-config
+data:
+  config.yaml: |
+    server:
+      port: {{ .Values.config.server.port }}
+      timeout: {{ .Values.config.server.timeout }}
+    
+    database:
+      URL: "{{ .Values.secrets.DB_URL }}"
+      host: "{{ .Values.secrets.DB_HOST }}"
+      port: {{ .Values.secrets.DB_PORT }}
+      user: "{{ .Values.secrets.DB_USER }}"
+      password: "{{ .Values.secrets.DB_PASSWORD }}"
+      name: "{{ .Values.secrets.DB_NAME }}"
+    
+    jwt:
+      secret: "{{ .Values.secrets.JWT_SECRET }}"
+      expirationTime: 24h
+    
+    smtp:
+      host: "{{ .Values.secrets.SMTP_HOST }}"
+      port: {{ .Values.secrets.SMTP_PORT }}
+      username: "{{ .Values.secrets.SMTP_USERNAME }}"
+      password: "{{ .Values.secrets.SMTP_PASSWORD }}"
+      fromName: "Broadcast API"
+      fromAddr: "{{ .Values.secrets.SMTP_FROM_ADDR }}"
+    
+    queue:
+      workerCount: {{ .Values.config.queue.workerCount }}
+      maxRetries: {{ .Values.config.queue.maxRetries }}
+      retryBackoff: {{ .Values.config.queue.retryBackoff }}
+      rateLimit: {{ .Values.config.queue.rateLimit }}

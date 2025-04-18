@@ -1,2 +1,5 @@
 pkg/config/config.yaml
 tmp
+k8s/manifests/secrets.yaml
+k8s/secrets/create-secrets.sh
+helm/broadcast-api/values.secret.yaml

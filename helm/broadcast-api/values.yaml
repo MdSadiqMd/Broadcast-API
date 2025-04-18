@@ -1,0 +1,41 @@
+replicaCount: 2
+
+image:
+  repository: broadcast-api
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 3000
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  hosts:
+    - host: broadcast-api.local
+      paths:
+        - path: /
+          pathType: Prefix
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+config:
+  server:
+    port: 3000
+    timeout: 30s
+
+  queue:
+    workerCount: 5
+    maxRetries: 3
+    retryBackoff: 5m
+    rateLimit: 10

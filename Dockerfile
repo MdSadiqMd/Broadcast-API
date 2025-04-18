@@ -18,6 +18,8 @@ RUN go build -o app cmd/server/main.go
 
 FROM alpine:latest AS production
 RUN apk add --no-cache ca-certificates
-COPY --from=builder app .
+RUN mkdir -p /app/pkg/config
+COPY --from=builder /app/app /app
+WORKDIR /app
 EXPOSE 3000
 CMD ./app
