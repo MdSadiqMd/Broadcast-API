@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: broadcast-api
+  labels:
+    app: broadcast-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: broadcast-api
+  template:
+    metadata:
+      labels:
+        app: broadcast-api
+    spec:
+      containers:
+        - name: broadcast-api
+          image: broadcast-api:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+          resources:
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+          envFrom:
+            - secretRef:
+                name: broadcast-api-secrets
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/pkg/config/config.yaml
+              subPath: config.yaml
+      volumes:
+        - name: config-volume
+          configMap:
+            name: broadcast-api-config
