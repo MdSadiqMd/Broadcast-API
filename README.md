@@ -1,7 +1,7 @@
 # Broadcast API
 A powerful and scalable email broadcasting system for managing campaigns, contacts, and sending both transactional and bulk emails.
 
-![image](https://github.com/user-attachments/assets/d1dac4eb-401b-42fc-b831-3b172aa93ba4)
+![Architecture Diagram](https://github.com/user-attachments/assets/095b4a36-0976-4496-8ee2-c6b015df689b)
 
 ## Overview
 
@@ -70,19 +70,22 @@ The application follows a clean architecture pattern with clear separation of co
 ## Technology Stack
 
 - **Backend**: Go (Golang)
-- **Database**: Postgres (implied from repository structure)
+- **Database**: PostgreSQL
 - **Email Delivery**: SMTP integration
 - **Containerization**: Docker
-- **Orchestration**: Docker Compose
+- **Orchestration**: Kubernetes and Helm
+- **Local Development**: Kind (Kubernetes in Docker)
 
 ## Installation
 
 ### Prerequisites
 - Go 1.22 or later
-- Docker and Docker Compose
-- PostgreSQL (if running without Docker)
+- Docker
+- kubectl (Kubernetes command-line tool)
+- Helm
+- Kind (for local Kubernetes development)
 
-### Using Docker
+### Using Docker Compose (Development)
 ```bash
 # Clone the repository
 git clone https://github.com/MdSadiqMd/Broadcast-API.git
@@ -90,6 +93,30 @@ cd broadcast-api
 
 # Start the application using Docker Compose
 docker-compose up -d
+```
+
+### Using Kubernetes and Helm (Production/Staging)
+```bash
+# Clone the repository
+git clone https://github.com/MdSadiqMd/Broadcast-API.git
+cd broadcast-api
+
+# Start a local Kubernetes cluster
+kind create cluster --name broadcast-cluster
+
+# Build and load the Docker image
+docker build -t broadcast-api:latest .
+kind load docker-image broadcast-api:latest --name broadcast-cluster
+
+# Deploy using Helm
+helm upgrade --install broadcast-api ./helm/broadcast-api -f ./helm/broadcast-api/values.secret.yaml
+
+# Access the application (port forwarding)
+kubectl port-forward svc/broadcast-api 3000:80
+
+# Delete everything when done
+helm uninstall broadcast-api
+kind delete cluster --name broadcast-cluster
 ```
 
 ### Manual Setup
@@ -118,6 +145,43 @@ The application is configured via `pkg/config/config.yaml`. Key configuration op
 - Authentication settings
 - Worker and scheduler configurations
 
+When deploying with Kubernetes, configuration is managed through Helm values and Kubernetes ConfigMaps/Secrets.
+
+## Kubernetes Deployment
+
+The application can be deployed to any Kubernetes cluster using Helm. The Helm chart in the `helm/broadcast-api` directory contains all necessary Kubernetes manifests:
+
+- Deployment
+- Service
+- ConfigMap
+- Secrets
+- Ingress (for external access)
+
+### Key Kubernetes Commands
+
+```bash
+# Check pod status
+kubectl get pods
+
+# View application logs
+kubectl logs -l app=broadcast-api
+
+# Access the application (port forwarding)
+kubectl port-forward svc/broadcast-api 3000:80
+
+# Update after code changes
+# 1. Rebuild image
+docker build -t broadcast-api:latest .
+# 2. Load to cluster
+kind load docker-image broadcast-api:latest --name broadcast-cluster
+# 3. Update deployment
+helm upgrade broadcast-api ./helm/broadcast-api -f ./helm/broadcast-api/values.secret.yaml
+
+# Delete everything when done
+helm uninstall broadcast-api
+kind delete cluster --name broadcast-cluster
+```
+
 ## Development
 
 ### Project Structure
@@ -132,16 +196,25 @@ The application is configured via `pkg/config/config.yaml`. Key configuration op
 │   ├── scheduler           # Scheduling components
 │   ├── services            # Business logic
 │   └── workers             # Background processing
-└── pkg                     # Public libraries
-    ├── config              # Configuration handling
-    ├── email               # Email utilities
-    └── utils               # General utilities
+├── pkg                     # Public libraries
+│   ├── config              # Configuration handling
+│   ├── email               # Email utilities
+│   └── utils               # General utilities
+├── helm                    # Helm chart for Kubernetes deployment
+│   └── broadcast-api       # Application-specific chart
+├── k8s                     # Kubernetes manifests (alternative to Helm)
+│   ├── manifests           # Resource definitions
+│   └── secrets             # Secret management scripts
+└── Dockerfile              # Container definition
 ```
 
 ### Build and Test
 ```bash
 # Build the application
 go build -o broadcast-api cmd/server/main.go
+
+# Build Docker image
+docker build -t broadcast-api:latest .
 ```
 
 ## License
